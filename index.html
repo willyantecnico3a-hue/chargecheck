@@ -40,6 +40,14 @@
     <p id="loadingText" class="font-semibold text-lg">Sincronizando...</p>
   </div>
 
+  <div id="onboardingOverlay" class="fixed inset-0 bg-slate-900/70 z-50 hidden items-end sm:items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+    <div class="bg-white rounded-2xl p-5 w-full max-w-md shadow-2xl">
+      <div class="flex items-center justify-between mb-3"><span id="onboardingStep" class="text-xs font-bold text-blue-700"></span><button type="button" onclick="closeOnboarding()" aria-label="Fechar orientação" class="text-slate-500 p-2"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+      <h2 id="onboardingTitle" class="text-xl font-bold text-slate-800"></h2><p id="onboardingText" class="text-slate-600 mt-2"></p>
+      <div class="flex gap-3 mt-5"><button id="onboardingSkip" type="button" onclick="closeOnboarding()" class="flex-1 p-3 rounded-xl border font-semibold text-slate-600">Pular</button><button id="onboardingNext" type="button" onclick="nextOnboarding()" class="flex-1 p-3 rounded-xl bg-blue-600 text-white font-bold">Próximo</button></div>
+    </div>
+  </div>
+
   <!-- HEADER GERAL -->
   <header class="bg-blue-800 text-white p-4 sticky top-0 z-40 shadow-md rounded-b-xl flex justify-between items-center">
     <div class="flex items-center gap-2">
@@ -125,6 +133,11 @@
       <!-- Preenchido via JS -->
     </div>
 
+    <section class="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+      <div class="flex items-start gap-3"><i data-lucide="clipboard-list" class="w-6 h-6 text-amber-700 shrink-0"></i><div><h2 class="font-bold text-amber-950">Relatar situação da sala</h2><p class="text-sm text-amber-900 mt-1">Registre sala suja, desarrumada ou carrinho deixado no local. Este registro é separado do checklist dos carrinhos.</p></div></div>
+      <button type="button" onclick="openReportForm()" class="w-full mt-3 bg-amber-600 text-white p-3 rounded-xl font-bold flex justify-center items-center gap-2"><i data-lucide="plus" class="w-5 h-5"></i> Fazer relato rápido</button>
+    </section>
+
     <!-- Botões Fixos de Ação (Bottom Bar) -->
     <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-200 p-4 pb-6 flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-30">
       <button onclick="openForm('RETIRADA')" class="flex-1 bg-blue-600 text-white p-4 rounded-xl font-bold text-sm sm:text-base flex flex-col items-center justify-center gap-1 shadow-lg active:scale-95 transition-transform">
@@ -134,6 +147,28 @@
         <i data-lucide="check-circle" class="w-6 h-6"></i> DEVOLVI<br><span class="text-xs font-normal opacity-80">ou transferi</span>
       </button>
     </div>
+  </main>
+
+  <main id="view-report" class="view p-4 mt-2 pb-8">
+    <button type="button" onclick="showView('dashboard')" class="text-blue-600 font-bold flex items-center gap-1 mb-4"><i data-lucide="arrow-left" class="w-5 h-5"></i> Voltar ao painel</button>
+    <h2 class="text-2xl font-bold text-slate-800">Relato da sala</h2><p class="text-sm text-slate-600 mt-1 mb-5">Selecione o que encontrou. Não precisa escrever para enviar.</p>
+    <form id="reportForm" class="space-y-5">
+      <div><label for="reportRoom" class="block text-sm font-bold text-slate-700 mb-1">Sala / turma</label><input id="reportRoom" required class="w-full p-4 border border-slate-300 rounded-xl text-lg bg-white" placeholder="Ex.: Sala 12, 3º B"></div>
+      <fieldset><legend class="block text-sm font-bold text-slate-700 mb-2">O que encontrou? (pode selecionar mais de um)</legend><div class="grid grid-cols-2 gap-2">
+        <label class="p-3 border rounded-xl bg-white has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50"><input type="checkbox" name="reportType" value="Sala suja" class="mr-2 accent-amber-600">Sala suja</label>
+        <label class="p-3 border rounded-xl bg-white has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50"><input type="checkbox" name="reportType" value="Sala desarrumada" class="mr-2 accent-amber-600">Sala desarrumada</label>
+        <label class="p-3 border rounded-xl bg-white has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50"><input type="checkbox" name="reportType" value="Carrinho deixado na sala" class="mr-2 accent-amber-600">Carrinho deixado</label>
+        <label class="p-3 border rounded-xl bg-white has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50"><input type="checkbox" name="reportType" value="Equipamentos fora do lugar" class="mr-2 accent-amber-600">Equipamentos fora do lugar</label>
+        <label class="p-3 border rounded-xl bg-white has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50"><input type="checkbox" name="reportType" value="Lixo ou materiais deixados" class="mr-2 accent-amber-600">Lixo / materiais</label>
+        <label class="p-3 border rounded-xl bg-white has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50"><input type="checkbox" name="reportType" value="Outro" class="mr-2 accent-amber-600">Outro</label>
+      </div></fieldset>
+      <div><label for="reportPeriod" class="block text-sm font-bold text-slate-700 mb-1">Quando aconteceu?</label><select id="reportPeriod" class="w-full p-4 border border-slate-300 rounded-xl text-lg bg-white"><option>Encontrei assim ao chegar</option><option>Aconteceu durante minha aula</option><option>Encontrei ao final da aula</option><option>Não sei informar</option></select></div>
+      <div><label for="reportShift" class="block text-sm font-bold text-slate-700 mb-1">Referência do turno</label><select id="reportShift" class="w-full p-4 border border-slate-300 rounded-xl text-lg bg-white"><option value="Turno anterior">Turno anterior</option><option value="Meu turno">Meu turno</option><option value="Não identificado">Não identificado</option></select></div>
+      <div><label for="reportCart" class="block text-sm font-bold text-slate-700 mb-1">Carrinho (se houver)</label><select id="reportCart" class="w-full p-4 border border-slate-300 rounded-xl text-lg bg-white"><option value="">Não se aplica / não sei</option><option>PRETO</option><option>VERMELHO</option><option>AZUL</option><option>AMARELO</option><option>VERDE</option><option>BRANCO</option></select></div>
+      <div><label for="reportPhoto" class="block text-sm font-bold text-slate-700 mb-1">Foto (opcional)</label><input type="file" id="reportPhoto" accept="image/*" capture="environment" class="block w-full text-sm text-slate-500"><p class="text-xs text-slate-500 mt-1">A foto será reduzida para agilizar o envio.</p></div>
+      <div><label for="reportNote" class="block text-sm font-bold text-slate-700 mb-1">Observação (opcional)</label><input id="reportNote" maxlength="180" class="w-full p-3 border border-slate-300 rounded-xl" placeholder="Só se quiser complementar"></div>
+      <button id="reportSubmit" type="submit" class="w-full bg-amber-600 text-white p-4 rounded-xl text-lg font-bold flex items-center justify-center gap-2"><i data-lucide="send" class="w-5 h-5"></i> Enviar relato</button>
+    </form>
   </main>
 
   <!-- ================= TELA: FORMULÁRIO DE AÇÃO ================= -->
@@ -286,6 +321,30 @@
       document.getElementById('userHeaderName').classList.remove('hidden');
       showView('dashboard');
       loadDashboardData();
+      if (!localStorage.getItem('cc_onboarding_v1')) setTimeout(() => showOnboarding(0), 450);
+    }
+
+    const onboardingSteps = [
+      { title: '1. Veja a situação dos carrinhos', text: 'No painel, confira onde está cada carrinho e veja as movimentações recentes.' },
+      { title: '2. Registre a retirada ou devolução', text: 'Use PEGUEI ou DEVOLVI. Escolha o carrinho e preencha os dados solicitados; as fotos são reduzidas antes do envio.' },
+      { title: '3. Relate a situação da sala', text: 'Use “Fazer relato rápido” para sala suja, desarrumada ou carrinho deixado. Esse formulário é independente do checklist.' }
+    ];
+    let onboardingIndex = 0;
+    function showOnboarding(index) {
+      onboardingIndex = index;
+      const step = onboardingSteps[index];
+      document.getElementById('onboardingTitle').textContent = step.title;
+      document.getElementById('onboardingText').textContent = step.text;
+      document.getElementById('onboardingStep').textContent = `PASSO ${index + 1} DE ${onboardingSteps.length}`;
+      document.getElementById('onboardingNext').textContent = index === onboardingSteps.length - 1 ? 'Concluir' : 'Próximo';
+      document.getElementById('onboardingSkip').classList.toggle('hidden', index === onboardingSteps.length - 1);
+      document.getElementById('onboardingOverlay').classList.replace('hidden', 'flex');
+      lucide.createIcons();
+    }
+    function nextOnboarding() { onboardingIndex < onboardingSteps.length - 1 ? showOnboarding(onboardingIndex + 1) : closeOnboarding(); }
+    function closeOnboarding() {
+      document.getElementById('onboardingOverlay').classList.replace('flex', 'hidden');
+      localStorage.setItem('cc_onboarding_v1', '1');
     }
 
     document.getElementById('formTurno').addEventListener('submit', (e) => {
@@ -447,6 +506,22 @@
       }
     }
 
+    // Reduz fotos grandes no próprio aparelho para encurtar a transferência.
+    async function optimizeImage(file) {
+      if (!file || !file.type.startsWith('image/') || file.size < 500 * 1024) return file;
+      const imageUrl = URL.createObjectURL(file);
+      try {
+        const image = new Image(); image.src = imageUrl; await image.decode();
+        const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(image.naturalWidth * scale); canvas.height = Math.round(image.naturalHeight * scale);
+        canvas.getContext('2d', { alpha: false }).drawImage(image, 0, 0, canvas.width, canvas.height);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.76));
+        if (!blob || blob.size >= file.size) return file;
+        return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg', lastModified: Date.now() });
+      } finally { URL.revokeObjectURL(imageUrl); }
+    }
+
     // Conversor Imagem para Base64
     function getBase64(file) {
       return new Promise((resolve, reject) => {
@@ -458,6 +533,35 @@
       });
     }
 
+    function openReportForm() {
+      document.getElementById('reportShift').value = 'Turno anterior';
+      showView('report');
+    }
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const tipos = [...document.querySelectorAll('input[name="reportType"]:checked')].map(input => input.value);
+      if (!tipos.length) { alert('Selecione ao menos uma situação encontrada.'); return; }
+      const submit = document.getElementById('reportSubmit'); submit.disabled = true;
+      showLoading('Preparando relato...');
+      try {
+        const photo = await optimizeImage(document.getElementById('reportPhoto').files[0]);
+        document.getElementById('loadingText').textContent = 'Enviando relato...';
+        const payload = {
+          action: 'reportRoom', professor_nome: user.nome, turno: user.turno,
+          sala_turma: document.getElementById('reportRoom').value, situacoes: tipos,
+          quando: document.getElementById('reportPeriod').value,
+          referencia_turno: document.getElementById('reportShift').value,
+          carrinho_cor: document.getElementById('reportCart').value,
+          observacao: document.getElementById('reportNote').value, foto: await getBase64(photo)
+        };
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        document.getElementById('reportForm').reset(); hideLoading();
+        alert('Relato enviado. Obrigado por avisar!'); showView('dashboard');
+      } catch (err) {
+        alert('Não foi possível enviar o relato. Verifique a conexão e tente novamente.'); hideLoading();
+      } finally { submit.disabled = false; }
+    });
+
     // Submissão da Ação
     document.getElementById('actionForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -465,7 +569,7 @@
       const acao = document.getElementById('acaoRegistro').value;
       const carrinho = document.querySelector('input[name="carrinho"]:checked').value;
       
-      showLoading('Enviando registro e fotos...');
+      showLoading('Preparando fotos...');
 
       let payload = {
         action: 'recordAction',
@@ -477,17 +581,18 @@
       if (acao === 'RETIRADA') {
         payload.turma_sala = document.getElementById('turmaSala').value;
         payload.como_encontrou = document.getElementById('comoEncontrou').value;
-        payload.foto_encontrou = await getBase64(document.getElementById('fotoEncontrou').files[0]);
+        payload.foto_encontrou = await getBase64(await optimizeImage(document.getElementById('fotoEncontrou').files[0]));
       } else if (acao === 'DEVOLUÇÃO') {
         payload.tudo_conectado = document.getElementById('tudoConectado').checked;
         payload.como_entregou = document.getElementById('comoEntregou').value;
-        payload.foto_entregou = await getBase64(document.getElementById('fotoEntregou').files[0]);
+        payload.foto_entregou = await getBase64(await optimizeImage(document.getElementById('fotoEntregou').files[0]));
       } else if (acao === 'TRANSFERÊNCIA') {
         payload.professor_destino = document.getElementById('profDestino').value;
         payload.turma_sala = document.getElementById('turmaDestino').value;
       }
 
       try {
+        document.getElementById('loadingText').textContent = 'Enviando registro...';
         const response = await fetch(API_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
